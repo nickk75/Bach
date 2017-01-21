@@ -42989,6 +42989,10 @@ var _user = require('./user.service');
 
 var _user2 = _interopRequireDefault(_user);
 
+var _jwt = require('./jwt.service');
+
+var _jwt2 = _interopRequireDefault(_jwt);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Create the module where our functionality can attach to
@@ -42998,9 +43002,55 @@ var servicesModule = _angular2.default.module('app.services', []);
 
 servicesModule.service('User', _user2.default);
 
+servicesModule.service('JWT', _jwt2.default);
+
 exports.default = servicesModule;
 
-},{"./user.service":91,"angular":16}],91:[function(require,module,exports){
+},{"./jwt.service":91,"./user.service":92,"angular":16}],91:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var JWT = function () {
+    JWT.$inject = ["AppConstants", "$window"];
+    function JWT(AppConstants, $window) {
+        'ngInject';
+
+        _classCallCheck(this, JWT);
+
+        this._AppConstants = AppConstants;
+        this._$window = $window;
+    }
+
+    _createClass(JWT, [{
+        key: 'save',
+        value: function save(token) {
+            this._$window.localStorage[this._AppConstants.jwtKey] = token;
+        }
+    }, {
+        key: 'get',
+        value: function get() {
+            this._$window.localStorage[this._AppConstants.jwtKey];
+        }
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            this._$window.localStorage.removeItem(this._AppConstants.jwtKey);
+        }
+    }]);
+
+    return JWT;
+}();
+
+exports.default = JWT;
+
+},{}],92:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -43014,14 +43064,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // This is exactly the same as creating a class and exporting it as a User, to actually wording it this way.
 // All our controllers create classes and export the controllers then.
 var User = function () {
-    User.$inject = ["AppConstants", "$http"];
-    function User(AppConstants, $http) {
+    User.$inject = ["JWT", "AppConstants", "$http"];
+    function User(JWT, AppConstants, $http) {
         'ngInject';
 
         // Creating references for the services that we are injecting
 
         _classCallCheck(this, User);
 
+        this._JWT = JWT;
         this._AppConstants = AppConstants;
         this._$http = $http;
 
@@ -43051,6 +43102,7 @@ var User = function () {
             }).then(
             // (res) => is the same as fucntion(res)
             function (res) {
+                _this._JWT.save(res.data.user.token);
                 _this.current = res.data.user;
 
                 // returns the res.data.user data.

@@ -2,10 +2,11 @@
 // This is exactly the same as creating a class and exporting it as a User, to actually wording it this way.
 // All our controllers create classes and export the controllers then.
 export default class User {
-    constructor(AppConstants, $http) {
+    constructor(JWT, AppConstants, $http) {
         'ngInject';
 
 // Creating references for the services that we are injecting
+        this._JWT = JWT;
         this._AppConstants = AppConstants;
         this._$http = $http;
 
@@ -29,6 +30,7 @@ export default class User {
     }).then(
     // (res) => is the same as fucntion(res)
         (res) => {
+            this._JWT.save(res.data.user.token);
             this.current = res.data.user;
 
 // returns the res.data.user data.

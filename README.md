@@ -1,6 +1,6 @@
 # bach
 
-npm install
-gulp
+npm install <br />
+gulp <br />
 
 port 5000
