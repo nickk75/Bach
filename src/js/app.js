@@ -15,6 +15,7 @@ import './components';
 import './home';
 import './layout';
 import './services';
+import './settings';
 
 
 
@@ -26,7 +27,8 @@ const requires = [
     'app.components',
     'app.home',
     'app.layout',
-    'app.services'
+    'app.services',
+    'app.settings'
 ];
 
 // Mount on window for testing
