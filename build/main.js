@@ -42529,7 +42529,7 @@ _angular2.default.bootstrap(document, ['app'], {
     strictDi: true
 });
 
-},{"./auth":76,"./components":77,"./config/app.config":80,"./config/app.constants":81,"./config/app.run":82,"./config/app.templates":83,"./home":86,"./layout":89,"./services":90,"angular":16,"angular-ui-router":4}],74:[function(require,module,exports){
+},{"./auth":76,"./components":77,"./config/app.config":80,"./config/app.constants":81,"./config/app.run":82,"./config/app.templates":83,"./home":87,"./layout":90,"./services":91,"angular":16,"angular-ui-router":4}],74:[function(require,module,exports){
 'use strict';
 
 AuthConfig.$inject = ["$stateProvider", "$httpProvider"];
@@ -42543,12 +42543,26 @@ function AuthConfig($stateProvider, $httpProvider) {
     url: '/login',
     controller: 'AuthCtrl as $ctrl',
     templateUrl: 'auth/auth.html',
-    title: 'Login'
+    title: 'Login',
+    resolve: {
+      auth: ["User", function auth(User) {
+        // they can only access this route if they are not logged in
+        // we ensure that they are not logged in
+        return User.ensureAuthIs(false);
+      }]
+    }
   }).state('app.signup', {
     url: '/signup',
     controller: 'AuthCtrl as $ctrl',
     templateUrl: 'auth/auth.html',
-    title: 'Sign up'
+    title: 'Sign up',
+    resolve: {
+      auth: ["User", function auth(User) {
+        // they can only access this route if they are not logged in
+        // we ensure that they are not logged in
+        return User.ensureAuthIs(false);
+      }]
+    }
   });
 };
 
@@ -42573,6 +42587,7 @@ var AuthCtrl = function () {
         _classCallCheck(this, AuthCtrl);
 
         this.User = User;
+        this._$state = $state;
 
         this.title = $state.current.title;
         this.authType = $state.current.name.replace('app.', '');
@@ -42588,8 +42603,8 @@ var AuthCtrl = function () {
             this.User.attemptAuth(this.authType, this.formData).then(
             // success call back, console.log the data we are getting back from the server
             function (res) {
-                _this.isSubmitting = false;
-                console.log(res);
+                // if the user is logged in we are redirected to the app.home state
+                _this._$state.go('app.home');
             }, function (err) {
                 // error call back, we console.log the errors that are logged in an errors object from the server
                 _this.isSubmitting = false;
@@ -42739,18 +42754,33 @@ AppConfig.$inject = ["$httpProvider", "$stateProvider", "$locationProvider", "$u
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _auth = require('./auth.interceptor');
+
+var _auth2 = _interopRequireDefault(_auth);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function AppConfig($httpProvider, $stateProvider, $locationProvider, $urlRouterProvider) {
   'ngInject';
 
+  $httpProvider.interceptors.push(_auth2.default);
+
   /*
     If you don't want hashbang routing, uncomment this line.
-    Our tutorial will be using hashbang routing though :)
   */
   // $locationProvider.html5Mode(true);
 
   $stateProvider.state('app', {
     abstract: true,
-    templateUrl: 'layout/app-view.html'
+    templateUrl: 'layout/app-view.html',
+    // Making a request to the Server to get User data
+    // to confirm if they are logged in or not
+    resolve: {
+      auth: ["User", function auth(User) {
+        return User.verifyAuth();
+      }]
+    }
   });
 
   $urlRouterProvider.otherwise('/');
@@ -42758,7 +42788,7 @@ function AppConfig($httpProvider, $stateProvider, $locationProvider, $urlRouterP
 
 exports.default = AppConfig;
 
-},{}],81:[function(require,module,exports){
+},{"./auth.interceptor":84}],81:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42808,13 +42838,58 @@ exports.default = AppRun;
 angular.module("templates", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("auth/auth.html", "<div class=\"auth-page\">\r\n  <div class=\"container page\">\r\n    <div class=\"row\">\r\n\r\n      <div class=\"col-md-6 offset-md-3 col-xs-12\">\r\n        <h1 class=\"text-xs-center\" ng-bind=\"::$ctrl.title\"></h1>\r\n        <p class=\"text-xs-center\">\r\n          <!-- we are targetting the login controller, if authType === signup, and vice versa for the one below -->\r\n          <a ui-sref=\"app.login\" ng-show=\"$ctrl.authType === \'signup\'\">\r\n              Login\r\n          </a>\r\n          <a ui-sref=\"app.signup\" ng-show=\"$ctrl.authType === \'login\'\">\r\n              Sign up\r\n          </a>\r\n        </p>\r\n\r\n        <!-- We create a component that has a html template, with the functionality we want to be exectu\r\n        We might re-use that component again in the applciation, so instead of retyping it each time,\r\n        we can just access it through the code below -->\r\n        <list-errors errors=\"$ctrl.errors\"></list-errors>\r\n\r\n\r\n        <form ng-submit=\"$ctrl.submitForm()\">\r\n          <!-- Freeze the form until the form is submitted, no other functionality can take place -->\r\n          <fieldset ng-disabled=\"$ctrl.isSubmitting\">\r\n\r\n            <fieldset class=\"form-group\" ng-show=\"$ctrl.authType === \'signup\'\">\r\n              <input class=\"form-control form-control-lg\"\r\n                type=\"text\"\r\n                placeholder=\"Username\"\r\n                ng-model=\"$ctrl.formData.username\" />\r\n            </fieldset>\r\n\r\n            <fieldset class=\"form-group\">\r\n              <input class=\"form-control form-control-lg\"\r\n                type=\"email\"\r\n                placeholder=\"Email\"\r\n                ng-model=\"$ctrl.formData.email\" />\r\n            </fieldset>\r\n\r\n            <fieldset class=\"form-group\">\r\n              <input class=\"form-control form-control-lg\"\r\n                type=\"password\"\r\n                placeholder=\"Password\"\r\n                ng-model=\"$ctrl.formData.password\" />\r\n            </fieldset>\r\n\r\n            <button class=\"btn btn-lg btn-primary pull-xs-right\"\r\n              type=\"submit\" ng-bind=\"::$ctrl.title\">\r\n\r\n            </button>\r\n\r\n          </fieldset>\r\n        </form>\r\n      </div>\r\n\r\n    </div>\r\n  </div>\r\n</div>");
   $templateCache.put("components/list-errors.html", "<ul class=\"error-messages\" ng-show=\"$ctrl.errors\">\r\n<!-- This iterates through every key in the object -->\r\n    <div ng-repeat=\"(field, errors) in $ctrl.errors\">\r\n    <!-- While this repeat is for the strings in the object -->\r\n        <li ng-repeat=\"error in errors\">\r\n        <!-- display the field (e-mail, pass etc) and the error associated to the field -->\r\n        {{field}} {{error}}\r\n        </li>\r\n    </div>\r\n</ul>");
-  $templateCache.put("home/home.html", " <div class=\"home-page\">\r\n\r\n  <!-- Splash banner that only shows when not logged in -->\r\n  <div class=\"banner\" show-authed=\"false\">\r\n    <div class=\"container\">\r\n      <h1 class=\"logo-font\" ng-bind=\"::$ctrl.appName | lowercase\"></h1>\r\n      <p>Metlife QA Automation</p>\r\n    </div>\r\n  </div>\r\n\r\n  <div class=\"container page\">\r\n    <div class=\"row\">\r\n\r\n\r\n      <!-- Main view - contains tabs & article list -->\r\n      <div class=\"col-md-9\">\r\n        <!-- Tabs for toggling between feed, article lists -->\r\n        <div class=\"feed-toggle\">\r\n          <ul class=\"nav nav-pills outline-active\">\r\n\r\n            <li class=\"nav-item\" show-authed=\"true\">\r\n              <a href=\"\" class=\"nav-link active\">\r\n                Your Feed\r\n              </a>\r\n            </li>\r\n\r\n            <li class=\"nav-item\">\r\n              <a href=\"\" class=\"nav-link\">\r\n                Global Feed\r\n              </a>\r\n            </li>\r\n\r\n          </ul>\r\n        </div>\r\n\r\n        <!-- List the current articles -->\r\n        <div class=\"article-preview\">\r\n          <div class=\"article-meta\">\r\n            <a href=\"\"><img /></a>\r\n            <div class=\"info\">\r\n              <a href=\"\" class=\"author\">BradGreen</a>\r\n              <span class=\"date\">January 20th</span>\r\n            </div>\r\n            <button class=\"btn btn-outline-primary btn-sm pull-xs-right\">\r\n              <i class=\"ion-heart\"></i> 29\r\n            </button>\r\n          </div>\r\n          <a href=\"\" class=\"preview-link\">\r\n            <h1>How to build Angular apps that scale</h1>\r\n            <p>Building web applications is not an easy task. It\'s even hard to make ones that scale.</p>\r\n            <span>Read more...</span>\r\n            <ul class=\"tag-list\">\r\n              <li class=\"tag-default tag-pill tag-outline\">programming</li>\r\n              <li class=\"tag-default tag-pill tag-outline\">web</li>\r\n            </ul>\r\n          </a>\r\n        </div>\r\n\r\n      </div>\r\n\r\n      <!-- Sidebar where popular tags are listed -->\r\n      <div class=\"col-md-3\">\r\n        <div class=\"sidebar\">\r\n\r\n          <p>Popular Tags</p>\r\n\r\n          <div class=\"tag-list\">\r\n            <a href=\"\" class=\"tag-default tag-pill\">\r\n              Tag One\r\n            </a>\r\n            <a href=\"\" class=\"tag-default tag-pill\">\r\n              Tag Two\r\n            </a>\r\n          </div>\r\n\r\n        </div>\r\n      </div>\r\n\r\n      <!-- End the row & container divs -->\r\n    </div>\r\n  </div>\r\n\r\n</div>\r\n");
+  $templateCache.put("home/home.html", " <div class=\"home-page\">\r\n\r\n  <!-- Splash banner that only shows when not logged in -->\r\n  <div class=\"banner\" show-authed=\"false\">\r\n    <div class=\"container\">\r\n      <h1 class=\"logo-font\" ng-bind=\"::$ctrl.appName | lowercase\"></h1>\r\n      <p>Metlife QA Automation</p>\r\n    </div>\r\n  </div>\r\n\r\n  <div class=\"container page\">\r\n    <div class=\"row\">\r\n\r\n\r\n      <!-- Main view - contains tabs & article list -->\r\n      <div class=\"col-md-9\">\r\n        <!-- Tabs for toggling between feed, article lists -->\r\n        <div class=\"feed-toggle\">\r\n          <ul class=\"nav nav-pills outline-active\">\r\n\r\n            <li class=\"nav-item\" show-authed=\"true\">\r\n              <a href=\"\" class=\"nav-link active\">\r\n                Your Feed\r\n              </a>\r\n            </li>\r\n\r\n            <li class=\"nav-item\">\r\n              <a href=\"\" class=\"nav-link\">\r\n                Global Feed\r\n              </a>\r\n            </li>\r\n\r\n          </ul>\r\n        </div>\r\n\r\n        <!-- List the current articles -->\r\n        <div class=\"article-preview\">\r\n          <div class=\"article-meta\">\r\n            <a href=\"\"><img /></a>\r\n            <div class=\"info\">\r\n              <a href=\"\" class=\"author\">Nick the Greek</a>\r\n              <span class=\"date\">January 20th</span>\r\n            </div>\r\n            <button class=\"btn btn-outline-primary btn-sm pull-xs-right\">\r\n              <i class=\"ion-heart\"></i> 29\r\n            </button>\r\n          </div>\r\n          <a href=\"\" class=\"preview-link\">\r\n            <h1>How to build Angular apps that scale</h1>\r\n            <p>Building web applications is not an easy task. It\'s even hard to make ones that scale.</p>\r\n            <span>Read more...</span>\r\n            <ul class=\"tag-list\">\r\n              <li class=\"tag-default tag-pill tag-outline\">programming</li>\r\n              <li class=\"tag-default tag-pill tag-outline\">web</li>\r\n            </ul>\r\n          </a>\r\n        </div>\r\n\r\n      </div>\r\n\r\n      <!-- Sidebar where popular tags are listed -->\r\n      <div class=\"col-md-3\">\r\n        <div class=\"sidebar\">\r\n\r\n          <p>Popular Tags</p>\r\n\r\n          <div class=\"tag-list\">\r\n            <a href=\"\" class=\"tag-default tag-pill\">\r\n              Tag One\r\n            </a>\r\n            <a href=\"\" class=\"tag-default tag-pill\">\r\n              Tag Two\r\n            </a>\r\n          </div>\r\n\r\n        </div>\r\n      </div>\r\n\r\n      <!-- End the row & container divs -->\r\n    </div>\r\n  </div>\r\n\r\n</div>\r\n");
   $templateCache.put("layout/app-view.html", "<app-header></app-header>\r\n\r\n<div ui-view></div>\r\n\r\n<app-footer></app-footer>\r\n");
   $templateCache.put("layout/footer.html", "<footer>\r\n  <div class=\"container\">\r\n    <a class=\"logo-font\" ui-sref=\"app.home\" ng-bind=\"::$ctrl.appName | lowercase\"></a>\r\n    <span class=\"attribution\">\r\n      &copy; {{::$ctrl.date | date:\'yyyy\'}}.\r\n      Designed by Nikos Konstantinidis. Code Licensed under MIT\r\n    </span>\r\n  </div>\r\n</footer>\r\n");
   $templateCache.put("layout/header.html", "<nav class=\"navbar navbar-light\">\r\n  <div class=\"container\">\r\n\r\n    <a class=\"navbar-brand\"\r\n      ui-sref=\"app.home\"\r\n      ng-bind=\"::$ctrl.appName | lowercase\">\r\n    </a>\r\n\r\n    <!-- Show this for logged out users -->\r\n    <ul show-authed=\"false\"\r\n      class=\"nav navbar-nav pull-xs-right\">\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.home\">\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Home</button>\r\n        </a>\r\n      </li>\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.login\">\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Login</button>\r\n        </a>\r\n      </li>\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.signup\">\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Sign up</button>\r\n        </a>\r\n      </li>\r\n\r\n    </ul>\r\n\r\n    <!-- Show this for logged in users -->\r\n    <ul show-authed=\"true\"\r\n      class=\"nav navbar-nav pull-xs-right\">\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.home\">\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Home</button>\r\n        </a>\r\n      </li>\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.editor\">&nbsp;\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Tests</button>\r\n        </a>\r\n      </li>\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.settings\">&nbsp;\r\n          <button class=\"btn\" \"btn-primary\" type=\"button\">Settings</button>\r\n        </a>\r\n      </li>\r\n\r\n      <li class=\"nav-item\">\r\n        <a class=\"nav-link\"\r\n          ui-sref-active=\"active\"\r\n          ui-sref=\"app.profile.main({ username: $ctrl.currentUser.username})\">\r\n          <img ng-src=\"{{$ctrl.currentUser.image}}\" class=\"user-pic\" />\r\n          {{ $ctrl.currentUser.username }}\r\n        </a>\r\n      </li>\r\n\r\n    </ul>\r\n\r\n\r\n  </div>\r\n</nav>\r\n");
 }]);
 
 },{}],84:[function(require,module,exports){
+'use strict';
+
+authInterceptor.$inject = ["JWT", "AppConstants", "$window", "$q"];
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+/*
+Interpretors, allow you to edit the data before it's displayed on the DOM
+You can access it and edit the json straight from the server
+*/
+function authInterceptor(JWT, AppConstants, $window, $q) {
+    'ngInject';
+
+    // returning an object with the interceptor
+
+    return {
+        // automatically attach Authorization header
+        request: function request(config) {
+            // We check if the config passed through the function matches
+            // the api value in our constants
+            // then we see if there is a token
+            if (config.url.indexOf(AppConstants.api) === 0 && JWT.get()) {
+                // if that's true then we add those values to the config json
+                config.header.Authorization = 'Token ' + JWT.get();
+            }
+            return config;
+        },
+
+        //handle 401 errors
+        responseError: function responseError(rejection) {
+            if (rejection.status === 401) {
+                // clear any JWT token being stored
+                JWT.destory();
+                // do a hard page refresh
+                $window.location.reload();
+            }
+            // reject the promise
+            return $q.reject(rejection);
+        }
+    };
+}
+
+exports.default = authInterceptor;
+
+},{}],85:[function(require,module,exports){
 'use strict';
 
 HomeConfig.$inject = ["$stateProvider"];
@@ -42835,7 +42910,7 @@ function HomeConfig($stateProvider) {
 
 exports.default = HomeConfig;
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42855,7 +42930,7 @@ HomeCtrl.$inject = ["AppConstants"];
 
 exports.default = HomeCtrl;
 
-},{}],86:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42889,7 +42964,7 @@ homeModule.controller('HomeCtrl', _home4.default);
 
 exports.default = homeModule;
 
-},{"./home.config":84,"./home.controller":85,"angular":16}],87:[function(require,module,exports){
+},{"./home.config":85,"./home.controller":86,"angular":16}],88:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42917,7 +42992,7 @@ var AppFooter = {
 
 exports.default = AppFooter;
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42942,7 +43017,7 @@ var AppHeader = {
 
 exports.default = AppHeader;
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -42974,7 +43049,7 @@ layoutModule.component('appFooter', _footer2.default);
 
 exports.default = layoutModule;
 
-},{"./footer.component":87,"./header.component":88,"angular":16}],90:[function(require,module,exports){
+},{"./footer.component":88,"./header.component":89,"angular":16}],91:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -43002,11 +43077,12 @@ var servicesModule = _angular2.default.module('app.services', []);
 
 servicesModule.service('User', _user2.default);
 
+// attach to the angular module
 servicesModule.service('JWT', _jwt2.default);
 
 exports.default = servicesModule;
 
-},{"./jwt.service":91,"./user.service":92,"angular":16}],91:[function(require,module,exports){
+},{"./jwt.service":92,"./user.service":93,"angular":16}],92:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -43022,22 +43098,39 @@ var JWT = function () {
     function JWT(AppConstants, $window) {
         'ngInject';
 
+        // we have the JWT token we want to access in the AppConstants
+
         _classCallCheck(this, JWT);
 
         this._AppConstants = AppConstants;
+        // Access to the angular window access point
         this._$window = $window;
     }
+
+    /*
+    LocalStorage is a variable that follows the window element, so even if the
+    page is refereshed the data in the localStorage is persisted.
+    */
+
+    // We save the jwt token in our constants
+
 
     _createClass(JWT, [{
         key: 'save',
         value: function save(token) {
             this._$window.localStorage[this._AppConstants.jwtKey] = token;
         }
+
+        // return that key if we want to get the token
+
     }, {
         key: 'get',
         value: function get() {
-            this._$window.localStorage[this._AppConstants.jwtKey];
+            return this._$window.localStorage[this._AppConstants.jwtKey];
         }
+
+        // get rid of the token if we no longer need it
+
     }, {
         key: 'destroy',
         value: function destroy() {
@@ -43050,7 +43143,7 @@ var JWT = function () {
 
 exports.default = JWT;
 
-},{}],92:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -43064,8 +43157,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // This is exactly the same as creating a class and exporting it as a User, to actually wording it this way.
 // All our controllers create classes and export the controllers then.
 var User = function () {
-    User.$inject = ["JWT", "AppConstants", "$http"];
-    function User(JWT, AppConstants, $http) {
+    User.$inject = ["JWT", "AppConstants", "$http", "$state", "$q"];
+    function User(JWT, AppConstants, $http, $state, $q) {
         'ngInject';
 
         // Creating references for the services that we are injecting
@@ -43075,6 +43168,8 @@ var User = function () {
         this._JWT = JWT;
         this._AppConstants = AppConstants;
         this._$http = $http;
+        this._$state = $state;
+        this._$q = $q;
 
         // Current is the current individual logged in,
         // if u invoke current, it shows who is logged in
@@ -43108,6 +43203,94 @@ var User = function () {
                 // returns the res.data.user data.
                 return res;
             });
+        }
+        /*
+        Test on console by after logging in as a User
+        var User = angular.element(document).injector().get('User')
+        User.logout()
+        */
+
+    }, {
+        key: 'logout',
+        value: function logout() {
+            // setting logged in individual to null
+            this.current = null;
+            // calling the destroy method for the JWT token
+            this._JWT.destroy();
+            // refersh the page, return to the same state, but reload the data
+            this._$state.go(this._$state.$current, null, { reload: true });
+        }
+
+        // this method is invoked to check if the user is logged in or not
+
+    }, {
+        key: 'verifyAuth',
+        value: function verifyAuth() {
+            var _this2 = this;
+
+            // injecting $q is the way you create promises in Angular
+            // creating deferred promise
+            var deferred = this._$q.defer();
+
+            // Check for the JWT token
+            // if there is no token, they are not logged in
+            if (!this._JWT.get()) {
+                deferred.resolve(false);
+                // return the promise becaue we defo know they are not logged in.
+                // stops the rest of the code from executing because we know they are now logged in.
+                return deferred.promise;
+            }
+
+            if (this.current) {
+                // if they is data in the 'current', we know that they are logged in
+                deferred.resolve(true);
+            } else {
+                // Otherwise we are making a request to the http server
+                this._$http({
+                    url: this._AppConstants.api + '/user',
+                    method: 'GET',
+                    headers: {
+                        Authorization: 'Token ' + this._JWT.get()
+                    }
+                }).then(
+                // we are handling the response from the request
+                function (res) {
+                    // we are equaling this.current with the data that we got from the server
+                    _this2.current = res.data.user;
+                    deferred.resolve(true);
+                },
+                // we are handling the error from the request
+                function (err) {
+                    // accounting for bad/faulty or out dated tokens
+                    _this2._JWT.destroy();
+                    deferred.resolve(false);
+                });
+            }
+
+            return deferred.promise;
+        }
+
+        // returns a boolean response, if auth = true = logged in and vise versa
+
+    }, {
+        key: 'ensureAuthIs',
+        value: function ensureAuthIs(bool) {
+            var _this3 = this;
+
+            // creating deferred promise
+            var deferred = this._$q.defer();
+            // authValid is telling us true or faluse
+            this.verifyAuth().then(function (authValid) {
+                // if authvalid is not equal to what we want it to be
+                if (authValid !== bool) {
+                    // then change state to home page
+                    _this3._$state.go('app.home');
+                    deferred.resolve(false);
+                } else
+                    // Otherwise let them be on the page
+                    deferred.resolve(true);
+            });
+            return deferred.promise;
         }
     }]);
 

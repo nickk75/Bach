@@ -8,6 +8,7 @@ import UserService from './user.service';
 servicesModule.service('User', UserService);
 
 import JwtService from './jwt.service';
+// attach to the angular module
 servicesModule.service('JWT', JwtService);
 
 
