@@ -67,8 +67,8 @@
       <li class="nav-item">
         <a class="nav-link"
           ui-sref-active="active"
-          ui-sref="app.profile.main({ username: $ctrl.currentUser.username})">
-          {{ $ctrl.currentUser.username }}
+          ui-sref="app.profile({ username: $ctrl.currentUser.username})">
+          <button class="btn" "btn-primary" type="button">{{ $ctrl.currentUser.username }}</button>
         </a>
       </li>
 
