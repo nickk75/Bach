@@ -40,6 +40,19 @@ export default class User {
             }
         );
     }
+
+    update(fields) {
+        return this._$http({
+            url: this._AppConstants.api + '/user',
+            method: 'PUT',
+            data: { user: fields }
+        }).then(
+            (res) => {
+                this.current = res.data.user;
+                return res.data.user;
+            }
+        );
+    }
 /*
 Test on console by after logging in as a User
 var User = angular.element(document).injector().get('User')
@@ -95,7 +108,9 @@ User.logout()
                     this._JWT.destroy();
                     deferred.resolve(false);
                 }
-            )
+                // Reject automatically handled by auth interceptor
+                // Will boot them to homepage
+            );
         }
 
         return deferred.promise;

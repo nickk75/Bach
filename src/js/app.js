@@ -14,6 +14,7 @@ import './auth';
 import './components';
 import './home';
 import './layout';
+import './profile';
 import './services';
 import './settings';
 
@@ -27,6 +28,7 @@ const requires = [
     'app.components',
     'app.home',
     'app.layout',
+    'app.profile',
     'app.services',
     'app.settings'
 ];

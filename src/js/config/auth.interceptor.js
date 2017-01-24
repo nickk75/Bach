@@ -14,7 +14,7 @@ function authInterceptor(JWT, AppConstants, $window, $q) {
             // then we see if there is a token
             if(config.url.indexOf(AppConstants.api) === 0 && JWT.get()) {
                 // if that's true then we add those values to the config json
-                config.header.Authorization = 'Token ' + JWT.get();
+                config.headers.Authorization = 'Token ' + JWT.get();
             }
             return config;
         },
