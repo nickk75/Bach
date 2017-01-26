@@ -10,8 +10,10 @@ import 'angular-ui-router';
 import './config/app.templates';
 
 // Import our app functionaity
+import './article';
 import './auth';
 import './components';
+import './editor';
 import './home';
 import './layout';
 import './profile';
@@ -24,8 +26,10 @@ import './settings';
 const requires = [
     'ui.router',
     'templates',
+    'app.article',
     'app.auth',
     'app.components',
+    'app.editor',
     'app.home',
     'app.layout',
     'app.profile',
