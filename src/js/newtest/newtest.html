@@ -1,0 +1,68 @@
+<div class="newtest-page">
+  <div class="container page">
+    <div class="row">
+      <div class="col-md-10 offset-md-1 col-xs-12">
+
+        <h1 class="text-xs-center">New Test Form</h1>
+
+        <list-errors errors="$ctrl.errors"></list-errors>
+
+        <form>
+          <!-- TODO! create is submitting controller -->
+          <fieldset ng-disabled="$ctrl.isSubmitting">
+
+                        <fieldset class="form-group">
+              <!-- TODO! create is article title (test title) controller -->
+              <input class="form-control form-control-lg"
+                ng-model="$ctrl.article.title"
+                type="text"
+                placeholder="Test Title" />
+            </fieldset>
+
+            <fieldset>
+              <select name="browsers">
+                <option value="" disabled selected>Select</option>
+                <option ng-repeat="browser in $ctrl.browsers" value="browser.value">{{browser.name}}</option>
+              </select>
+            </fieldset>
+
+            <fieldset>
+              <select ng-model="selectedItem" ng-options="env.value for env in $ctrl.env | unique: env.value">
+                <option value="" disabled selected>Select</option>
+                <option value="env.value">{{env.value}}</option>
+              </select>
+            </fieldset>
+
+            <fieldset>
+              <select name="enviornments">
+                <option value="" disabled selected>Select</option>
+                <option ng-repeat="env in $ctrl.env" value="env.value">{{env.name}}</option>
+              </select>
+            </fieldset>
+
+            <fieldset class="form-group">
+              <label ng-repeat="entry in $ctrl._NewTest.entries">
+                <input type="checkbox"> <b> testcase type: </b>{{entry.gsx$type.$t}} <b>testcase ID: </b>{{entry.gsx$testcaseid.$t}}
+              </label>
+            </fieldset>
+
+          </fieldset>
+        </form>
+
+
+
+
+
+        <button class="btn btn-lg pull-xs-right btn-primary" type="button" ng-click="$ctrl.submit()">
+          Run Test
+        </button>
+
+
+
+
+
+
+      </div>
+    </div>
+  </div>
+</div>

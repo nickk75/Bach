@@ -13,9 +13,9 @@ import './config/app.templates';
 import './article';
 import './auth';
 import './components';
-import './editor';
 import './home';
 import './layout';
+import './newtest';
 import './profile';
 import './services';
 import './settings';
@@ -29,9 +29,9 @@ const requires = [
     'app.article',
     'app.auth',
     'app.components',
-    'app.editor',
     'app.home',
     'app.layout',
+    'app.newtest',
     'app.profile',
     'app.services',
     'app.settings'

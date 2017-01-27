@@ -17,7 +17,7 @@ servicesModule.service('Profile', ProfileService);
 import ArticlesService from './articles.service';
 servicesModule.service('Articles', ArticlesService);
 
-import GsheetsService from './gsheets.service';
-servicesModule.service('Gsheets', GsheetsService);
+import NewTestService from './newtest.service';
+servicesModule.service('NewTest', NewTestService);
 
 export default servicesModule;
