@@ -19,6 +19,9 @@
                 placeholder="Test Title" />
             </fieldset>
 
+            <!-- http://jsfiddle.net/micaz/zdemywk2/4/
+            http://stackoverflow.com/questions/21525967/showing-unique-dropdown-options-in-angularjs -->
+
             <fieldset>
               <select name="browsers">
                 <option value="" disabled selected>Select</option>
@@ -27,9 +30,9 @@
             </fieldset>
 
             <fieldset>
-              <select ng-model="selectedItem" ng-options="env.value for env in $ctrl.env | unique: env.value">
+              <select ng-model="selectedItem" ng-options="env.value for env in $ctrl.env | unique: 'value'">
                 <option value="" disabled selected>Select</option>
-                <option value="env.value">{{env.value}}</option>
+                <option value="env.value">{{value}}</option>
               </select>
             </fieldset>
 
