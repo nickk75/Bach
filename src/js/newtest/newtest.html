@@ -7,6 +7,7 @@
 
         <list-errors errors="$ctrl.errors"></list-errors>
 
+
         <form>
           <!-- TODO! create is submitting controller -->
           <fieldset ng-disabled="$ctrl.isSubmitting">
@@ -19,27 +20,35 @@
                 placeholder="Test Title" />
             </fieldset>
 
-            <!-- http://jsfiddle.net/micaz/zdemywk2/4/
-            http://stackoverflow.com/questions/21525967/showing-unique-dropdown-options-in-angularjs -->
+            <!--
+            http://jsfiddle.net/micaz/zdemywk2/4/
+            http://plnkr.co/edit/60GO0zhSGoEUm7tu6mbc?p=preview
+            -->
 
             <fieldset>
-              <select name="browsers">
+              <select name="browsers"
+                      ng-model="$ctrl.browsers">
                 <option value="" disabled selected>Select</option>
-                <option ng-repeat="browser in $ctrl.browsers" value="browser.value">{{browser.name}}</option>
+                <option ng-repeat="browser in $ctrl.options.browsers" value="browser.value">{{browser.name}}</option>
               </select>
             </fieldset>
 
             <fieldset>
-              <select ng-model="selectedItem" ng-options="env.value for env in $ctrl.env | unique: 'value'">
+              <select id="release"
+                      ng-model="$ctrl.release"
+                      ng-hide="!$ctrl.browsers"
+                      ng-options="release for (release, environments) in $ctrl.environments">
                 <option value="" disabled selected>Select</option>
-                <option value="env.value">{{value}}</option>
               </select>
             </fieldset>
 
+
             <fieldset>
-              <select name="enviornments">
+              <select id="environment"
+                      ng-model="$ctrl.environment"
+                      ng-hide="!$ctrl.release"
+                      ng-options="environment for (release, environment) in $ctrl.release">
                 <option value="" disabled selected>Select</option>
-                <option ng-repeat="env in $ctrl.env" value="env.value">{{env.name}}</option>
               </select>
             </fieldset>
 
@@ -51,9 +60,6 @@
 
           </fieldset>
         </form>
-
-
-
 
 
         <button class="btn btn-lg pull-xs-right btn-primary" type="button" ng-click="$ctrl.submit()">

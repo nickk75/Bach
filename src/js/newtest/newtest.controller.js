@@ -3,9 +3,10 @@ class NewTestCtrl {
     'ngInject';
 
     this._NewTest = NewTest;
-    this.browsers = this._NewTest.object.browsers;
-    this.env = this._NewTest.object.environments;
-  }
+    this.options = this._NewTest.options;
+    this.environments = this._NewTest.options.environments;
+
+    }
 }
 
 export default NewTestCtrl;

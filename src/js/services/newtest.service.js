@@ -3,13 +3,12 @@ export default class newtest {
         'ngInject';
 
         this._$http = $http;
-
-
         let testData = this;
 
         this._$http({
             method: 'GET',
-            url: 'https://api.myjson.com/bins/1817zt',
+            // https://spreadsheets.google.com/feeds/list/1HW1vO4JpyGQ7fN7uJX4eX9vhrDJ3pQGGU24npSh8B6g/1/public/values?alt=json
+            url: 'https://api.myjson.com/bins/bslnx',
         })
         .then(function(response) {
             testData.entries = response.data.feed.entry;
@@ -17,20 +16,17 @@ export default class newtest {
             alert("Error");
         });
 
-        this.object = {
+        this.options = {
             browsers: [
                 {value: 1, name: 'Chrome'},
                 {value: 2, name: 'Firefox'},
                 {value: 3, name: 'IE 11'}
             ],
-            environments : [
-                {value: 'release 1', qaValue: 'QA1', name: 'R1-QA1', link: ''},
-                {value: 'release 1', qaValue: 'QA2', name: 'R1-QA2', link: ''},
-                {value: 'release 2', qaValue: 'QA1', name: 'R2-QA1', link: ''},
-                {value: 'release 2', qaValue: 'QA2', name: 'R2-QA2', link: ''},
-                {value: 'release 3', qaValue: 'QA1', name: 'R3-QA1', link: ''},
-                {value: 'release 3', qaValue: 'QA2', name: 'R3-QA2', link: ''}
-            ]
+            environments : {
+                'Release 1' : ['R1-QA1', 'R1-QA2'],
+                'Release 2' : ['R2-QA1', 'R2-QA2'],
+                'Release 3' : ['R3-QA1', 'R3-QA2']
+            }
         };
     }
 }
